@@ -1,12 +1,11 @@
-import {LOGIN_USER} from '../actionTypes'
+import {LOGIN_USER, LoginType} from '../actionTypes'
 
-
-
-const user = (state = [], action: { type: string; email: string; password: string; token: string; }) => {
+const user = (state = [], action:LoginType )=> {
   switch (action.type) {
     case LOGIN_USER:
       return {
         ...state,
+            id: action.id,
             email: action.email,
             password: action.password,
             token: action.token,

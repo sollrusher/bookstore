@@ -1,7 +1,8 @@
-import {LOGIN_USER} from '../actionTypes'
+import {LOGIN_USER, LoginType} from '../actionTypes'
 
-export const loginUser = (email: string, password: string, token: string) => ({
+export const loginUser = (id: number, email: string, password: string, token: string):LoginType => ({
   type: LOGIN_USER,
+  id,
   email,
   password,
   token,

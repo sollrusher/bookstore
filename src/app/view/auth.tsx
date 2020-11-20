@@ -1,8 +1,8 @@
 import React, { Component } from "react";
-import axios from "axios";
 import styled from "styled-components";
 import { connect } from "react-redux";
 import { loginUser} from "../../store/login/login.action";
+import { login } from "../../api/login";
 
 const Form = styled.form`
   max-width: 350px;
@@ -55,26 +55,35 @@ const P = styled.p`
   padding-top: 10px;
 `;
 
-class Auth extends Component {
-  constructor(props) {
+
+type ThisProps = { 
+  store?: object
+  loginUser: any
+};
+type ThisState = { 
+  email: string
+  password: string
+  error: boolean
+  [x: string]: any
+};
+
+class Auth extends Component<ThisProps, ThisState> {
+  constructor(props:any) {
     super(props);
     this.state = {
       email: "danila@crocodila.com",
       password: "test",
       error: false,
     };
-    this.authentication = this.authentication.bind(this);
   }
 
-  getToken = (e) => {
-    const {store, loginUser} = this.props;
+  getToken = (e: React.MouseEvent<HTMLInputElement, MouseEvent>) => {
+    const { loginUser} = this.props;
     e.preventDefault();
-    this.authentication()
+    login(this.state.email, this.state.password)
       .then((data) => {
-        localStorage.setItem("token", JSON.stringify(data.payload.token));
-        loginUser(this.state.email, this.state.password, data.payload.token)
-        console.log("token successfuly get");
-        console.log(store)
+        localStorage.setItem("token", JSON.stringify(data.data.payload.token));
+        loginUser(data.data.payload.user.id ,this.state.email, this.state.password, data.data.payload.token)
       })
       .catch(() => {
         this.setState({
@@ -83,37 +92,24 @@ class Auth extends Component {
       });
   };
 
-  async authentication() {
-    const response = await axios({
-      method: "post",
-      url: "http://127.0.0.1:3000/auth",
-      data: {
-        email: this.state.email,
-        password: this.state.password,
-      },
-    });
-    return response.data;
-  }
 
-  onValueChange = (event) => {
-    if (!event.target.value) {
+
+  onValueChange = (event: React.FormEvent<HTMLInputElement>) => {
+    if (!event.currentTarget.value) {
       return;
     }
-    if (event.key !== "Enter") {
-      return;
-    }
-    const name = event.target.name;
+
+    const name = event.currentTarget.name;
 
     this.setState({
-      [name]: event.target.value,
+      [name]: event.currentTarget.value,
     });
-    this.getToken(event);
   };
 
-  handleChange = (event) => {
+  handleChange = (event: React.FormEvent<HTMLInputElement>) => {
     this.setState({ error: false });
-    const name = event.target.name;
-    this.setState({ [name]: event.target.value });
+    const name = event.currentTarget.name;
+    this.setState({ [name]: event.currentTarget.value });
   };
 
   render() {
@@ -149,12 +145,12 @@ class Auth extends Component {
   }
 }
 
-const mapStateToProps = (store) => ({
+const mapStateToProps = (store: object) => ({
   store,
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  loginUser: (email, password, token) => dispatch(loginUser(email, password, token)),
+const mapDispatchToProps = (dispatch: any) => ({
+  loginUser: (id: number, email:string, password:string, token:string) => dispatch(loginUser(id, email, password, token)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(Auth);
