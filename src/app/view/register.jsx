@@ -1,8 +1,8 @@
 import React, { Component } from "react";
-import styled from "styled-components";
 import { connect } from "react-redux";
-import { loginUser} from "../../store/user/user.action";
-import { login } from "../../api/login";
+import styled from "styled-components";
+import { register } from "../../api/register";
+import { loginUser } from "../../store/user/user.action";
 
 const Form = styled.form`
   max-width: 350px;
@@ -55,32 +55,26 @@ const P = styled.p`
   padding-top: 10px;
 `;
 
-type Props = { 
-  store?: object
-  loginUser: any
-};
-type State = { 
-  email: string
-  password: string
-  error: boolean
-  [x: string]: any
-};
-
-class Auth extends Component<Props, State> {
-  constructor(props:any) {
+class Register extends Component {
+  constructor(props) {
     super(props);
     this.state = {
-      email: "danila@crocodila.com",
-      password: "test",
+      email: "",
+      password: "",
+      age: "",
+      fullname: "",
       error: false,
     };
   }
 
-  getToken = (e: React.MouseEvent<HTMLInputElement, MouseEvent>) => {
-    const { loginUser} = this.props;
+
+
+  getRegister = (e) => {
+    const { loginUser } = this.props;
     e.preventDefault();
-    login(this.state.email, this.state.password)
+    register(this.state.email, this.state.password, this.state.fullname, this.state.age)
       .then((data) => {
+        console.log(data.data.payload.user.id)
         loginUser(data.data.payload.user.id ,this.state.email, this.state.password, data.data.payload.token)
       })
       .catch(() => {
@@ -90,9 +84,7 @@ class Auth extends Component<Props, State> {
       });
   };
 
-
-
-  onValueChange = (event: React.FormEvent<HTMLInputElement>) => {
+  onValueChange = (event) => {
     if (!event.currentTarget.value) {
       return;
     }
@@ -104,7 +96,7 @@ class Auth extends Component<Props, State> {
     });
   };
 
-  handleChange = (event: React.FormEvent<HTMLInputElement>) => {
+  handleChange = (event) => {
     this.setState({ error: false });
     const name = event.currentTarget.name;
     this.setState({ [name]: event.currentTarget.value });
@@ -112,30 +104,50 @@ class Auth extends Component<Props, State> {
 
   render() {
     return (
-      <Form action="">
-        <H>Войти на сайт</H>
+      <Form>
+        <H>Регистрация</H>
         <Div>
           <Input
+            type="email"
             name="email"
-            type="text"
             id="email"
-            placeholder="Email"
+            placeholder="email"
             onChange={this.handleChange}
             onKeyPress={this.onValueChange}
           />
         </Div>
         <Div>
           <Input
-            name="password"
             type="password"
+            name="password"
             id="password"
-            placeholder="Password"
+            placeholder="password"
+            onChange={this.handleChange}
+            onKeyPress={this.onValueChange}
+          />
+        </Div>
+        <Div>
+          <Input
+            type="text"
+            name="fullname"
+            placeholder="fullname"
+            id="fullname"
+            onChange={this.handleChange}
+            onKeyPress={this.onValueChange}
+          />
+        </Div>
+        <Div>
+          <Input
+            type="age"
+            name="age"
+            id="age"
+            placeholder="age"
             onChange={this.handleChange}
             onKeyPress={this.onValueChange}
           />
         </Div>
         <P>
-          <Submit onClick={this.getToken}/>
+          <Submit onClick={this.getRegister} />
         </P>
         <P>{this.state.error? 'wrong field': ''}</P>
       </Form>
@@ -143,12 +155,13 @@ class Auth extends Component<Props, State> {
   }
 }
 
-const mapStateToProps = (store: object) => ({
+
+const mapStateToProps = (store) => ({
   store,
 });
 
-const mapDispatchToProps = (dispatch: any) => ({
-  loginUser: (id: number, email:string, password:string, token:string) => dispatch(loginUser(id, email, password, token)),
+const mapDispatchToProps = (dispatch) => ({
+  loginUser: (id, email, password, token) => dispatch(loginUser(id, email, password, token)),
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(Auth);
+export default connect(mapStateToProps, mapDispatchToProps)(Register);
