@@ -1,8 +1,9 @@
 import React, { Component } from "react";
-import { connect } from "react-redux";
+import { connect} from "react-redux";
 import styled from "styled-components";
 import { register } from "../../api/register";
 import { loginUser } from "../../store/user/user.action";
+import { RootState } from "../../store/reducer";
 
 const Form = styled.form`
   max-width: 350px;
@@ -55,21 +56,32 @@ const P = styled.p`
   padding-top: 10px;
 `;
 
-class Register extends Component {
-  constructor(props) {
+type State ={
+  email: string
+  password: string
+  age: number
+  fullname: string
+  error: boolean
+  [x: string]: any
+}
+type Props = { 
+  store?: RootState
+  loginUser: any
+};
+
+class Register extends Component<Props,State> {
+  constructor(props: Props) {
     super(props);
     this.state = {
       email: "",
       password: "",
-      age: "",
+      age: 0,
       fullname: "",
       error: false,
     };
   }
 
-
-
-  getRegister = (e) => {
+  getRegister = (e: React.MouseEvent<HTMLInputElement, MouseEvent>) => {
     const { loginUser } = this.props;
     e.preventDefault();
     register(this.state.email, this.state.password, this.state.fullname, this.state.age)
@@ -84,19 +96,7 @@ class Register extends Component {
       });
   };
 
-  onValueChange = (event) => {
-    if (!event.currentTarget.value) {
-      return;
-    }
-
-    const name = event.currentTarget.name;
-
-    this.setState({
-      [name]: event.currentTarget.value,
-    });
-  };
-
-  handleChange = (event) => {
+  handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     this.setState({ error: false });
     const name = event.currentTarget.name;
     this.setState({ [name]: event.currentTarget.value });
@@ -113,7 +113,7 @@ class Register extends Component {
             id="email"
             placeholder="email"
             onChange={this.handleChange}
-            onKeyPress={this.onValueChange}
+
           />
         </Div>
         <Div>
@@ -123,7 +123,7 @@ class Register extends Component {
             id="password"
             placeholder="password"
             onChange={this.handleChange}
-            onKeyPress={this.onValueChange}
+
           />
         </Div>
         <Div>
@@ -133,7 +133,7 @@ class Register extends Component {
             placeholder="fullname"
             id="fullname"
             onChange={this.handleChange}
-            onKeyPress={this.onValueChange}
+
           />
         </Div>
         <Div>
@@ -143,7 +143,7 @@ class Register extends Component {
             id="age"
             placeholder="age"
             onChange={this.handleChange}
-            onKeyPress={this.onValueChange}
+
           />
         </Div>
         <P>
@@ -156,12 +156,12 @@ class Register extends Component {
 }
 
 
-const mapStateToProps = (store) => ({
-  store,
+const mapStateToProps = (user: RootState) => ({
+  user,
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  loginUser: (id, email, password, token) => dispatch(loginUser(id, email, password, token)),
-});
+const mapDispatchToProps = {
+  loginUser
+};
 
 export default connect(mapStateToProps, mapDispatchToProps)(Register);

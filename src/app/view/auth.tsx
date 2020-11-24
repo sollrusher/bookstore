@@ -1,8 +1,9 @@
 import React, { Component } from "react";
 import styled from "styled-components";
-import { connect } from "react-redux";
+import { connect} from "react-redux";
 import { loginUser} from "../../store/user/user.action";
 import { login } from "../../api/login";
+import { RootState } from "../../store/reducer";
 
 const Form = styled.form`
   max-width: 350px;
@@ -56,7 +57,7 @@ const P = styled.p`
 `;
 
 type Props = { 
-  store?: object
+  store?: RootState
   loginUser: any
 };
 type State = { 
@@ -67,7 +68,7 @@ type State = {
 };
 
 class Auth extends Component<Props, State> {
-  constructor(props:any) {
+  constructor(props:Props) {
     super(props);
     this.state = {
       email: "danila@crocodila.com",
@@ -90,20 +91,6 @@ class Auth extends Component<Props, State> {
       });
   };
 
-
-
-  onValueChange = (event: React.FormEvent<HTMLInputElement>) => {
-    if (!event.currentTarget.value) {
-      return;
-    }
-
-    const name = event.currentTarget.name;
-
-    this.setState({
-      [name]: event.currentTarget.value,
-    });
-  };
-
   handleChange = (event: React.FormEvent<HTMLInputElement>) => {
     this.setState({ error: false });
     const name = event.currentTarget.name;
@@ -121,7 +108,6 @@ class Auth extends Component<Props, State> {
             id="email"
             placeholder="Email"
             onChange={this.handleChange}
-            onKeyPress={this.onValueChange}
           />
         </Div>
         <Div>
@@ -131,7 +117,6 @@ class Auth extends Component<Props, State> {
             id="password"
             placeholder="Password"
             onChange={this.handleChange}
-            onKeyPress={this.onValueChange}
           />
         </Div>
         <P>
@@ -143,12 +128,12 @@ class Auth extends Component<Props, State> {
   }
 }
 
-const mapStateToProps = (store: object) => ({
+const mapStateToProps = (store: RootState) => ({
   store,
 });
 
-const mapDispatchToProps = (dispatch: any) => ({
-  loginUser: (id: number, email:string, password:string, token:string) => dispatch(loginUser(id, email, password, token)),
-});
+const mapDispatchToProps = {
+  loginUser
+};
 
 export default connect(mapStateToProps, mapDispatchToProps)(Auth);

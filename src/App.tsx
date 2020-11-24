@@ -5,19 +5,21 @@ import AllUsers from "./app/view/allusers";
 import Auth from "./app/view/auth";
 import Profile from './app/view/profile'
 import Register from './app/view/register'
+import PrivateRoute from "./privateRoute";
 
 
 type ThisProps= {
   user: any
 }
 
-class App extends Component<ThisProps> {
+
+
+class App extends Component <ThisProps> {
 
   render() {
     const { user } = this.props;
     let checkReg = false;
     if(user) checkReg = true;
-    else checkReg = false;
     
     return (
       <Router>
@@ -40,15 +42,15 @@ class App extends Component<ThisProps> {
           <Route exact path="/">
             {checkReg ? <Redirect to="/profile" />: <Auth/>}
           </Route>
-          <Route path='/allusers'>
-          {checkReg ? <AllUsers/> : <Redirect to="/"/>}
-          </Route>
-          <Route path="/profile">
-          {checkReg ? <Profile/> : <Redirect to="/"/>}
-          </Route>
+          <PrivateRoute auth={checkReg} path="/allusers">
+              <AllUsers />
+          </PrivateRoute>
           <Route path='/register'>
-            <Register/>
+          {checkReg ? <Redirect to="/profile" />: <Register/>}
           </Route>
+          <PrivateRoute auth={checkReg} path="/profile">
+              <Profile />
+          </PrivateRoute>
 
         </Switch>
     </Router>
@@ -56,7 +58,7 @@ class App extends Component<ThisProps> {
   }
 }
 
-const mapStateToProps = (store:any) => ({
+const mapStateToProps = (store: any) => ({
   user: store.user.user[0],
 });
 
