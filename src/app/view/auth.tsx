@@ -28,20 +28,23 @@ const Title = styled.h1`
 const WrapperInput = styled.div`
   position: relative;
   margin-bottom: 40px;
-`;
-const Input = styled.input`
-  display: block;
-  width: 100%;
-  padding: 0 10px;
-  line-height: 40px;
-  font-family: "Roboto", sans-serif;
-  background: none;
-  border-width: 0;
-  border-bottom: 2px solid #4a90e2;
-  transition: all 0.2s ease;
-  &:focus {
-    outline: 0;
-    border-color: #f77a52;
+  .auth__input {
+    display: block;
+    width: 100%;
+    padding: 0 10px;
+    line-height: 40px;
+    font-family: "Roboto", sans-serif;
+    background: none;
+    border-width: 0;
+    border-bottom: 2px solid #4a90e2;
+    transition: all 0.2s ease;
+    &:focus {
+      outline: 0;
+      border-color: #f77a52;
+    }
+  }
+  .invalid {
+    background-color: rgba(255, 0, 0, 0.61);
   }
 `;
 const SubmitButton = styled.input.attrs({
@@ -77,6 +80,8 @@ class Auth extends Component<Props, State> {
       password: 'test',
       error: false,
       message: '',
+      emailIsValid: true,
+      passwordIsValid: true,
     };
   }
 
@@ -84,6 +89,10 @@ class Auth extends Component<Props, State> {
     e.preventDefault();
     const { loginUser } = this.props;
     const { email, password } = this.state;
+    // if(!email.includes('.com') && !email.includes('@')){
+    //   this.setState({ emailIsValid: false });
+    //   return
+    // }
     login(email, password)
       .then((data) => {
         const {
@@ -102,32 +111,44 @@ class Auth extends Component<Props, State> {
   };
 
   handleChange = (event: React.FormEvent<HTMLInputElement>) => {
-    this.setState({ error: false });
+    this.setState({ error: false, message: '' });
     const { name } = event.currentTarget;
-    this.setState({ [name]: event.currentTarget.value });
+    if(name === 'password' && event.currentTarget.value.length >= 8){
+      this.setState({ error: true, message: 'Не больше 8 символов', passwordIsValid: false });
+      return
+    }
+    if(name === 'email' && event.currentTarget.value.length >= 30){
+      this.setState({ error: true, message: 'Не больше 30 символов', emailIsValid: false });
+      return
+    }
+    
+    this.setState({ [name]: event.currentTarget.value, emailIsValid: true, passwordIsValid: true });
   };
 
   render() {
-    const { error, message } = this.state;
-    console.log(message);
+    const { error, message, passwordIsValid, emailIsValid } = this.state;
     return (
       <AuthForm action="">
         <Title>Войти на сайт</Title>
         <WrapperInput>
-          <Input
+          <input
+            className={emailIsValid? "auth__input" : "auth__input invalid"}
             name="email"
-            type="text"
+            type="email"
             id="email"
             placeholder="Email"
+            value={this.state.email}
             onChange={this.handleChange}
           />
         </WrapperInput>
         <WrapperInput>
-          <Input
+          <input
+            className={passwordIsValid? "auth__input" : "auth__input invalid"}
             name="password"
             type="password"
             id="password"
             placeholder="Password"
+            value={this.state.password}
             onChange={this.handleChange}
           />
         </WrapperInput>
