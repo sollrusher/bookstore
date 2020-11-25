@@ -1,18 +1,22 @@
+/* eslint-disable import/no-unresolved */
+/* eslint-disable import/extensions */
 import axios from 'axios';
-import {baseURL} from './config'
+import baseURL from './config';
 
 const fetcher = axios.create({
-  baseURL: baseURL
+  baseURL,
 });
 
 fetcher.interceptors.request.use((config) => {
-  let token = localStorage.getItem("token")
-    if(token)
-    {token = JSON.parse(token);}
+  const configure = config;
+  let token = localStorage.getItem('token');
+  if (token) {
+    token = JSON.parse(token);
+    configure.headers.Authorization = `Bearer ${token}`;
+  }
 
-  config.headers.Authorization = `Bearer ${token}`
-  return config
-})
+  return config;
+});
 
 // fetcher.interceptors.response((res) => {
 

@@ -1,4 +1,6 @@
-import React from "react";
+/* eslint-disable react/jsx-filename-extension */
+/* eslint-disable no-use-before-define */
+import React from 'react';
 
 interface ItemType {
   email: string
@@ -9,9 +11,18 @@ interface ItemType {
 function Item({ email, fullname, age }:ItemType) {
   return (
     <ul>
-      <li>Email is -{email}</li>
-      <li>Fullname -{fullname}</li>
-      <li>Age - {age}</li>
+      <li>
+        Email is -
+        {email}
+      </li>
+      <li>
+        Fullname -
+        {fullname}
+      </li>
+      <li>
+        Age -
+        {age}
+      </li>
       <br />
     </ul>
   );

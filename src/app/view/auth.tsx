@@ -1,17 +1,22 @@
-import React, { Component } from "react";
-import styled from "styled-components";
-import { connect} from "react-redux";
-import { loginUser} from "../../store/user/user.action";
-import { login } from "../../api/login";
-import { RootState } from "../../store/reducer";
+/* eslint-disable no-shadow */
+/* eslint-disable react/jsx-filename-extension */
+/* eslint-disable import/extensions */
+/* eslint-disable import/no-unresolved */
+// eslint-disable-next-line no-use-before-define
+import React, { Component } from 'react';
+import styled from 'styled-components';
+import { connect } from 'react-redux';
+import { loginUser } from '../../store/user/user.action';
+import { login } from '../../api/user';
+import { RootState } from '../../store/reducer';
 
-const Form = styled.form`
+const AuthForm = styled.form`
   max-width: 350px;
   padding: 80px 30px 30px;
   margin: 50px auto 30px;
   background: white;
 `;
-const H = styled.h1`
+const Title = styled.h1`
   position: relative;
   z-index: 5;
   margin: 0 0 60px;
@@ -20,7 +25,7 @@ const H = styled.h1`
   font-size: 30px;
   font-weight: normal;
 `;
-const Div = styled.div`
+const WrapperInput = styled.div`
   position: relative;
   margin-bottom: 40px;
 `;
@@ -39,28 +44,25 @@ const Input = styled.input`
     border-color: #f77a52;
   }
 `;
-const Submit = styled.input.attrs({
-  type: "submit",
-  value: "Submit",
+const SubmitButton = styled.input.attrs({
+  type: 'submit',
+  value: 'Submit',
 })`
   width: 100%;
-  padding: 0;
+  padding: 10px 0 0 0;
   line-height: 42px;
   background: #4a90e2;
   border-width: 0;
   color: white;
   font-size: 20px;
-`;
-const P = styled.p`
   margin: 0;
-  padding-top: 10px;
 `;
 
-type Props = { 
+type Props = {
   store?: RootState
   loginUser: any
 };
-type State = { 
+type State = {
   email: string
   password: string
   error: boolean
@@ -71,37 +73,47 @@ class Auth extends Component<Props, State> {
   constructor(props:Props) {
     super(props);
     this.state = {
-      email: "danila@crocodila.com",
-      password: "test",
+      email: 'danila@crocodila.com',
+      password: 'test',
       error: false,
+      message: '',
     };
   }
 
   getToken = (e: React.MouseEvent<HTMLInputElement, MouseEvent>) => {
-    const { loginUser} = this.props;
     e.preventDefault();
-    login(this.state.email, this.state.password)
+    const { loginUser } = this.props;
+    const { email, password } = this.state;
+    login(email, password)
       .then((data) => {
-        loginUser(data.data.payload.user.id ,this.state.email, this.state.password, data.data.payload.token)
+        const {
+          id, fullname, age, about,
+        } = data.data.payload.user;
+        loginUser(id, email, fullname, age, about);
       })
-      .catch(() => {
+      .catch((errorData) => {
+        console.log(errorData.response);
+        const { error, message } = errorData.response.data;
         this.setState({
-          error: true,
+          error,
+          message,
         });
       });
   };
 
   handleChange = (event: React.FormEvent<HTMLInputElement>) => {
     this.setState({ error: false });
-    const name = event.currentTarget.name;
+    const { name } = event.currentTarget;
     this.setState({ [name]: event.currentTarget.value });
   };
 
   render() {
+    const { error, message } = this.state;
+    console.log(message);
     return (
-      <Form action="">
-        <H>Войти на сайт</H>
-        <Div>
+      <AuthForm action="">
+        <Title>Войти на сайт</Title>
+        <WrapperInput>
           <Input
             name="email"
             type="text"
@@ -109,8 +121,8 @@ class Auth extends Component<Props, State> {
             placeholder="Email"
             onChange={this.handleChange}
           />
-        </Div>
-        <Div>
+        </WrapperInput>
+        <WrapperInput>
           <Input
             name="password"
             type="password"
@@ -118,12 +130,12 @@ class Auth extends Component<Props, State> {
             placeholder="Password"
             onChange={this.handleChange}
           />
-        </Div>
-        <P>
-          <Submit onClick={this.getToken}/>
-        </P>
-        <P>{this.state.error? 'wrong field': ''}</P>
-      </Form>
+        </WrapperInput>
+
+        <SubmitButton onClick={this.getToken} />
+
+        <p>{ error ? `${message}` : ''}</p>
+      </AuthForm>
     );
   }
 }
@@ -133,7 +145,7 @@ const mapStateToProps = (store: RootState) => ({
 });
 
 const mapDispatchToProps = {
-  loginUser
+  loginUser,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(Auth);

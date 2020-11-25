@@ -1,9 +1,13 @@
-import React, { Component } from "react";
-import { connect} from "react-redux";
-import styled from "styled-components";
-import { register } from "../../api/register";
-import { loginUser } from "../../store/user/user.action";
-import { RootState } from "../../store/reducer";
+/* eslint-disable react/jsx-filename-extension */
+/* eslint-disable import/no-unresolved */
+/* eslint-disable import/extensions */
+// eslint-disable-next-line no-use-before-define
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import styled from 'styled-components';
+import { register } from '../../api/user';
+import { loginUser } from '../../store/user/user.action';
+import { RootState } from '../../store/reducer';
 
 const Form = styled.form`
   max-width: 350px;
@@ -40,8 +44,8 @@ const Input = styled.input`
   }
 `;
 const Submit = styled.input.attrs({
-  type: "submit",
-  value: "Submit",
+  type: 'submit',
+  value: 'Submit',
 })`
   width: 100%;
   padding: 0;
@@ -64,30 +68,33 @@ type State ={
   error: boolean
   [x: string]: any
 }
-type Props = { 
+type Props = {
   store?: RootState
   loginUser: any
 };
 
-class Register extends Component<Props,State> {
+class Register extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      email: "",
-      password: "",
+      email: '',
+      password: '',
       age: 0,
-      fullname: "",
+      fullname: '',
       error: false,
     };
   }
 
   getRegister = (e: React.MouseEvent<HTMLInputElement, MouseEvent>) => {
-    const { loginUser } = this.props;
     e.preventDefault();
-    register(this.state.email, this.state.password, this.state.fullname, this.state.age)
+    const {
+      email, password, fullname, age,
+    } = this.state;
+    register(email, password, fullname, age)
       .then((data) => {
-        console.log(data.data.payload.user.id)
-        loginUser(data.data.payload.user.id ,this.state.email, this.state.password, data.data.payload.token)
+        console.log(data.data.payload.user.id);
+        const { id } = data.data.payload.user;
+        loginUser(id, email, fullname, age, '');
       })
       .catch(() => {
         this.setState({
@@ -98,11 +105,12 @@ class Register extends Component<Props,State> {
 
   handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     this.setState({ error: false });
-    const name = event.currentTarget.name;
+    const { name } = event.currentTarget;
     this.setState({ [name]: event.currentTarget.value });
   };
 
   render() {
+    const { error } = this.state;
     return (
       <Form>
         <H>Регистрация</H>
@@ -149,19 +157,18 @@ class Register extends Component<Props,State> {
         <P>
           <Submit onClick={this.getRegister} />
         </P>
-        <P>{this.state.error? 'wrong field': ''}</P>
+        <P>{error ? 'wrong field' : ''}</P>
       </Form>
     );
   }
 }
-
 
 const mapStateToProps = (user: RootState) => ({
   user,
 });
 
 const mapDispatchToProps = {
-  loginUser
+  loginUser,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(Register);

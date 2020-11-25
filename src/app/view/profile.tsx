@@ -1,11 +1,14 @@
-import React, { Component } from "react";
-import getProfileData from "../../api/getProfile";
-import { connect } from "react-redux";
-import styled from "styled-components";
-import Man from "./Rectangle3.png";
-import sendAvatar from "../../api/sendAvatar";
-import { RootState } from "../../store/reducer";
-import { sendAbout } from "../../api/sendAbout";
+/* eslint-disable react/jsx-filename-extension */
+/* eslint-disable react/no-access-state-in-setstate */
+/* eslint-disable import/no-unresolved */
+/* eslint-disable import/extensions */
+/* eslint-disable no-use-before-define */
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import styled from 'styled-components';
+import Man from './Rectangle3.png';
+import { RootState } from '../../store/reducer';
+import { sendAvatar, sendAbout, getProfileData } from '../../api/user';
 
 const Div = styled.div`
   display: flex;
@@ -74,17 +77,31 @@ class Profile extends Component<Props, MyState> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      user: {id: 0, email: "", fullname: "", age: ""},
+      user: {
+        id: 0, email: '', fullname: '', age: '',
+      },
     };
+  }
+
+  async componentDidMount() {
+    const { users } = this.props;
+    console.log(users);
+    if (!users) return;
+    const user = await getProfileData();
+    this.setState({
+      ...this.state,
+      ...{
+        user,
+      },
+    });
   }
 
   onSelectImage = (files: any) => {
     const file = files[0];
-    const data = new FormData();
-    data.append("file", file);
-
-    sendAvatar(data, this.state.user.id).then(data => {
-      console.log(data)
+    const formData = new FormData();
+    formData.append('file', file);
+    sendAvatar(formData).then((data) => {
+      console.log(data);
     });
   };
 
@@ -92,20 +109,25 @@ class Profile extends Component<Props, MyState> {
     if (!event.currentTarget.value) {
       return;
     }
-    if (event.key !== "Enter") return;
-
-    sendAbout(this.state.user.id, this.state.user.about);
+    if (event.key !== 'Enter') return;
+    const { user } = this.state;
+    const { id, about } = user;
+    sendAbout(id, about);
   };
 
   handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    if(event.target.value.length >= 255) return
-    this.setState({ ...this.state, user:{...this.state.user,about: event.target.value, },  });
+    if (event.target.value.length >= 255) return;
+    const { user } = this.state;
+    this.setState({ ...this.state, user: { ...user, about: event.target.value } });
   }
 
   render() {
-    console.log(this.state.user);
-    console.log(this.props);
-    const { email, fullname, age, about }: User = this.state.user;
+    // console.log(this.state.user);
+    // console.log(this.props);
+    const { user } = this.state;
+    const {
+      email, fullname, age, about,
+    }: User = user;
     return (
       <Div>
         <H1>{fullname}</H1>
@@ -118,12 +140,18 @@ class Profile extends Component<Props, MyState> {
                 value={about}
                 onChange={this.handleChange}
                 onKeyPress={this.onValueChange}
-              ></Textarea>
+              />
             </DivAbout>
             <DivRight>
               <Img src={Man} alt="ass" />
-              <H4>Email: {email}</H4>
-              <Age>Age: {age}</Age>
+              <H4>
+                Email:
+                {email}
+              </H4>
+              <Age>
+                Age:
+                {age}
+              </Age>
               <input
                 type="file"
                 id="inputGroupFile01"
@@ -135,26 +163,10 @@ class Profile extends Component<Props, MyState> {
       </Div>
     );
   }
-
-  async componentDidMount() {
-    const { users } = this.props;
-    console.log(users);
-    if (!users) return;
-    const id = users.id;
-    let data = await getProfileData(id);
-    if (data.data.error) return;
-    const user = data.data.payload.users;
-    this.setState({
-      ...this.state,
-      ...{
-        user,
-      },
-    });
-  }
 }
 
 const mapStateToProps = (store: any) => ({
-  users: store.user.user[0],
+  users: store.user.user,
   store,
 });
 

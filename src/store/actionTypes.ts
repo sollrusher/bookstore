@@ -1,11 +1,17 @@
 export const LOGIN_USER = 'LOGIN_USER/Login';
+export const INIT_USER = 'INIT_USER/Login';
 
 interface LoginUserAction {
   type: typeof LOGIN_USER
   id: number
   email: string
-  password: string
-  token: string
+  fullname: string
+  age: number
+  about: string
 }
 
-export type LoginType = LoginUserAction
+interface InitUserAction {
+  type: typeof INIT_USER
+}
+
+export type LoginType = LoginUserAction | InitUserAction

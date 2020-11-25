@@ -1,11 +1,9 @@
-import {
-  combineReducers,
-} from 'redux';
-import login from './user/user.reducer'
-
+/* eslint-disable import/no-unresolved */
+import { combineReducers } from 'redux';
+import login from './user/user.reducer';
 
 export const rootReducer = combineReducers({
-  user: login
-})
+  user: login,
+});
 
 export type RootState = ReturnType<typeof rootReducer>
