@@ -4,38 +4,39 @@
 /* eslint-disable import/extensions */
 /* eslint-disable no-use-before-define */
 import React, { Component } from 'react';
-import { connect } from 'react-redux';
+import { connect, ConnectedProps } from 'react-redux';
 import styled from 'styled-components';
 import Man from './Rectangle3.png';
 import { RootState } from '../../store/reducer';
 import { sendAvatar, sendAbout, getProfileData } from '../../api/user';
+import { User } from '../../models/UserType';
 
-const Div = styled.div`
+const ProfileCard = styled.div`
   display: flex;
   width: 100%;
   justify-content: center;
   align-items: center;
   flex-direction: column;
 `;
-const H1 = styled.h1``;
-const Section = styled.section`
+const FullnameTitle = styled.h1``;
+const MainContainer = styled.section`
   padding: 15px 25px;
   width: 900px;
   border: solid 1px rgba(141, 136, 136, 0.39);
   border-radius: 60px;
 `;
-const DivTop = styled.div`
+const MainWrapper = styled.div`
   width: 900px;
   display: flex;
   justify-content: space-between;
 `;
-const DivAbout = styled.div`
+const About = styled.div`
   margin: 15px 0 0 15px;
   display: flex;
   flex-direction: column;
 `;
-const H3 = styled.div``;
-const Textarea = styled.textarea`
+const AboutTitle = styled.div``;
+const AboutInput = styled.textarea`
   margin-top: 15px;
   resize: none;
   height: 300px;
@@ -43,42 +44,42 @@ const Textarea = styled.textarea`
   outline: none;
   border: none;
 `;
-const DivRight = styled.div`
+const Right = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
 `;
-const Img = styled.img`
+const Avatar = styled.img`
   border-radius: 290px;
   box-shadow: 0 0 0 3px rgb(189, 175, 175), 0 0 19px #333;
   width: 400px;
 `;
-const H4 = styled.h4`
+const Email = styled.h4`
   margin: 15px 0 0 0;
 `;
 const Age = styled.h4``;
 
-type User = {
-  email: string;
-  fullname: string;
-  age: number;
-  about: string;
+type State = {
+  user: User;
 };
 
-type MyState = {
-  user: any;
-};
-type Props = {
-  store?: RootState;
-  users?: any;
-};
+const mapStateToProps = (store: RootState) => ({
+  users: store.user.user,
+});
 
-class Profile extends Component<Props, MyState> {
+const connector = connect(mapStateToProps);
+type Props = ConnectedProps<typeof connector>
+
+class Profile extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
       user: {
-        id: 0, email: '', fullname: '', age: '',
+        id: 0,
+        email: '',
+        fullname: '',
+        age: 0,
+        about: '',
       },
     };
   }
@@ -96,10 +97,11 @@ class Profile extends Component<Props, MyState> {
     });
   }
 
-  onSelectImage = (files: any) => {
-    const file = files[0];
+  onSelectImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.currentTarget.files;
+    if (!file) return;
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('file', file[0]);
     sendAvatar(formData).then((data) => {
       console.log(data);
     });
@@ -122,32 +124,30 @@ class Profile extends Component<Props, MyState> {
   }
 
   render() {
-    // console.log(this.state.user);
-    // console.log(this.props);
     const { user } = this.state;
     const {
       email, fullname, age, about,
     }: User = user;
     return (
-      <Div>
-        <H1>{fullname}</H1>
-        <Section>
-          <DivTop>
-            <DivAbout>
-              <H3>О себе:</H3>
-              <Textarea
+      <ProfileCard>
+        <FullnameTitle>{fullname}</FullnameTitle>
+        <MainContainer>
+          <MainWrapper>
+            <About>
+              <AboutTitle>О себе:</AboutTitle>
+              <AboutInput
                 placeholder="Input text here"
                 value={about}
                 onChange={this.handleChange}
                 onKeyPress={this.onValueChange}
               />
-            </DivAbout>
-            <DivRight>
-              <Img src={Man} alt="ass" />
-              <H4>
+            </About>
+            <Right>
+              <Avatar src={Man} alt="ass" />
+              <Email>
                 Email:
                 {email}
-              </H4>
+              </Email>
               <Age>
                 Age:
                 {age}
@@ -155,19 +155,14 @@ class Profile extends Component<Props, MyState> {
               <input
                 type="file"
                 id="inputGroupFile01"
-                onChange={(e) => this.onSelectImage(e.target.files)}
+                onChange={(e) => this.onSelectImage(e)}
               />
-            </DivRight>
-          </DivTop>
-        </Section>
-      </Div>
+            </Right>
+          </MainWrapper>
+        </MainContainer>
+      </ProfileCard>
     );
   }
 }
 
-const mapStateToProps = (store: any) => ({
-  users: store.user.user,
-  store,
-});
-
-export default connect<any>(mapStateToProps)(Profile);
+export default connector(Profile);

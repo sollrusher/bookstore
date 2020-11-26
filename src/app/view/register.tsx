@@ -3,19 +3,19 @@
 /* eslint-disable import/extensions */
 // eslint-disable-next-line no-use-before-define
 import React, { Component } from 'react';
-import { connect } from 'react-redux';
+import { connect, ConnectedProps } from 'react-redux';
 import styled from 'styled-components';
 import { register } from '../../api/user';
 import { loginUser } from '../../store/user/user.action';
 import { RootState } from '../../store/reducer';
 
-const Form = styled.form`
+const RegisterForm = styled.form`
   max-width: 350px;
   padding: 80px 30px 30px;
   margin: 50px auto 30px;
   background: white;
 `;
-const H = styled.h1`
+const Title = styled.h1`
   position: relative;
   z-index: 5;
   margin: 0 0 60px;
@@ -24,40 +24,40 @@ const H = styled.h1`
   font-size: 30px;
   font-weight: normal;
 `;
-const Div = styled.div`
+const WrapperInput = styled.div`
   position: relative;
   margin-bottom: 40px;
-`;
-const Input = styled.input`
-  display: block;
-  width: 100%;
-  padding: 0 10px;
-  line-height: 40px;
-  font-family: "Roboto", sans-serif;
-  background: none;
-  border-width: 0;
-  border-bottom: 2px solid #4a90e2;
-  transition: all 0.2s ease;
-  &:focus {
-    outline: 0;
-    border-color: #f77a52;
+  .register__input {
+    display: block;
+    width: 100%;
+    padding: 0 10px;
+    line-height: 40px;
+    font-family: "Roboto", sans-serif;
+    background: none;
+    border-width: 0;
+    border-bottom: 2px solid #4a90e2;
+    transition: all 0.2s ease;
+    &:focus {
+      outline: 0;
+      border-color: #f77a52;
+    }
+  }
+  .invalid {
+    background-color: rgba(255, 0, 0, 0.61);
   }
 `;
-const Submit = styled.input.attrs({
+const SubmitButton = styled.input.attrs({
   type: 'submit',
   value: 'Submit',
 })`
   width: 100%;
-  padding: 0;
+  padding: 10px 0 0 0;
   line-height: 42px;
   background: #4a90e2;
   border-width: 0;
   color: white;
   font-size: 20px;
-`;
-const P = styled.p`
   margin: 0;
-  padding-top: 10px;
 `;
 
 type State ={
@@ -66,12 +66,23 @@ type State ={
   age: number
   fullname: string
   error: boolean
-  [x: string]: any
+  message: string
+  emailIsValid: boolean
+  passwordIsValid: boolean
+  ageIsValid: boolean
+  fullnameIsValid: boolean
+  [x: string]: string | number | boolean
 }
-type Props = {
-  store?: RootState
-  loginUser: any
+const mapStateToProps = (user: RootState) => ({
+  user,
+});
+
+const mapDispatchToProps = {
+  loginUser,
 };
+
+const connector = connect(mapStateToProps, mapDispatchToProps);
+type Props = ConnectedProps<typeof connector>
 
 class Register extends Component<Props, State> {
   constructor(props: Props) {
@@ -82,6 +93,11 @@ class Register extends Component<Props, State> {
       age: 0,
       fullname: '',
       error: false,
+      message: '',
+      emailIsValid: true,
+      passwordIsValid: true,
+      ageIsValid: true,
+      fullnameIsValid: true,
     };
   }
 
@@ -90,85 +106,128 @@ class Register extends Component<Props, State> {
     const {
       email, password, fullname, age,
     } = this.state;
+    if ((!email.includes('@') || !email.includes('.com')) && (!email.includes('@') || !email.includes('.ru'))) {
+      this.setState({ emailIsValid: false });
+      return;
+    }
+    if (password.length === 9) {
+      return;
+    }
+    this.setState({ passwordIsValid: true });
     register(email, password, fullname, age)
       .then((data) => {
-        console.log(data.data.payload.user.id);
         const { id } = data.data.payload.user;
         loginUser(id, email, fullname, age, '');
       })
-      .catch(() => {
+      .catch((errorData) => {
+        console.log(errorData.response);
+        const { error, message } = errorData.response.data;
         this.setState({
-          error: true,
+          error,
+          message,
         });
       });
   };
 
-  handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    this.setState({ error: false });
+  handleChange = (event: React.FormEvent<HTMLInputElement>) => {
+    this.setState({ error: false, message: '' });
     const { name } = event.currentTarget;
-    this.setState({ [name]: event.currentTarget.value });
+    if (event.currentTarget.value !== '') {
+      if (name === 'password' && event.currentTarget.value.length >= 9) {
+        this.setState({ error: true, message: 'Не больше 8 символов', passwordIsValid: false });
+        return;
+      }
+      if (name === 'email' && event.currentTarget.value.length >= 30) {
+        this.setState({ error: true, message: 'Не больше 30 символов', emailIsValid: false });
+        return;
+      }
+      if (name === 'password' && !/[^\s]$/.test(event.currentTarget.value)) {
+        this.setState({ error: true, message: 'Нельзя использовать пробелы в пароле', passwordIsValid: false });
+        return;
+      }
+      if (name === 'age') {
+        const age = event.currentTarget.value;
+        if (!/^\d{1,}$/.test(age)) {
+          if (age === '' || +age < 0) return;
+          this.setState({ error: true, message: 'Можно вводить только цифры', ageIsValid: false });
+          return;
+        }
+      }
+      if (name === 'fullname') {
+        const fullname = event.currentTarget.value;
+        if (!/^[a-zA-Z а-яА-Я]*$/.test(fullname)) {
+          this.setState({ error: true, message: 'Можно вводить только буквы', fullnameIsValid: false });
+          return;
+        }
+      }
+    }
+    this.setState({
+      [name]: event.currentTarget.value,
+      emailIsValid: true,
+      passwordIsValid: true,
+      ageIsValid: true,
+      fullnameIsValid: true,
+    });
   };
 
   render() {
-    const { error } = this.state;
+    const {
+      error, message, passwordIsValid, emailIsValid,
+      fullnameIsValid, ageIsValid, email, password, fullname, age,
+    } = this.state;
     return (
-      <Form>
-        <H>Регистрация</H>
-        <Div>
-          <Input
+      <RegisterForm>
+        <Title>Регистрация</Title>
+        <WrapperInput>
+          <input
+            className={emailIsValid ? 'register__input' : 'register__input invalid'}
             type="email"
             name="email"
             id="email"
             placeholder="email"
             onChange={this.handleChange}
-
+            value={email}
           />
-        </Div>
-        <Div>
-          <Input
+        </WrapperInput>
+        <WrapperInput>
+          <input
+            className={passwordIsValid ? 'register__input' : 'register__input invalid'}
             type="password"
             name="password"
             id="password"
             placeholder="password"
             onChange={this.handleChange}
-
+            value={password}
           />
-        </Div>
-        <Div>
-          <Input
+        </WrapperInput>
+        <WrapperInput>
+          <input
+            className={fullnameIsValid ? 'register__input' : 'register__input invalid'}
             type="text"
             name="fullname"
             placeholder="fullname"
             id="fullname"
             onChange={this.handleChange}
-
+            value={fullname}
           />
-        </Div>
-        <Div>
-          <Input
-            type="age"
+        </WrapperInput>
+        <WrapperInput>
+          <input
+            className={ageIsValid ? 'register__input' : 'register__input invalid'}
+            type="number"
             name="age"
             id="age"
             placeholder="age"
             onChange={this.handleChange}
-
+            value={age}
           />
-        </Div>
-        <P>
-          <Submit onClick={this.getRegister} />
-        </P>
-        <P>{error ? 'wrong field' : ''}</P>
-      </Form>
+        </WrapperInput>
+        <SubmitButton onClick={this.getRegister} />
+        <p>{error ? `${message}` : ''}</p>
+
+      </RegisterForm>
     );
   }
 }
 
-const mapStateToProps = (user: RootState) => ({
-  user,
-});
-
-const mapDispatchToProps = {
-  loginUser,
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(Register);
+export default connector(Register);

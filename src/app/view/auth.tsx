@@ -5,7 +5,7 @@
 // eslint-disable-next-line no-use-before-define
 import React, { Component } from 'react';
 import styled from 'styled-components';
-import { connect } from 'react-redux';
+import { connect, ConnectedProps } from 'react-redux';
 import { loginUser } from '../../store/user/user.action';
 import { login } from '../../api/user';
 import { RootState } from '../../store/reducer';
@@ -61,16 +61,26 @@ const SubmitButton = styled.input.attrs({
   margin: 0;
 `;
 
-type Props = {
-  store?: RootState
-  loginUser: any
-};
 type State = {
   email: string
   password: string
   error: boolean
-  [x: string]: any
+  message: string
+  emailIsValid: boolean
+  passwordIsValid: boolean
+  [x: string]: string | boolean
 };
+
+const mapStateToProps = (store: RootState) => ({
+  store,
+});
+
+const mapDispatchToProps = {
+  loginUser,
+};
+
+const connector = connect(mapStateToProps, mapDispatchToProps);
+type Props = ConnectedProps<typeof connector>
 
 class Auth extends Component<Props, State> {
   constructor(props:Props) {
@@ -89,10 +99,14 @@ class Auth extends Component<Props, State> {
     e.preventDefault();
     const { loginUser } = this.props;
     const { email, password } = this.state;
-    // if(!email.includes('.com') && !email.includes('@')){
-    //   this.setState({ emailIsValid: false });
-    //   return
-    // }
+    if ((!email.includes('@') || !email.includes('.com')) && (!email.includes('@') || !email.includes('.ru'))) {
+      this.setState({ emailIsValid: false });
+      return;
+    }
+    if (password.length === 9) {
+      return;
+    }
+    this.setState({ passwordIsValid: true });
     login(email, password)
       .then((data) => {
         const {
@@ -113,42 +127,44 @@ class Auth extends Component<Props, State> {
   handleChange = (event: React.FormEvent<HTMLInputElement>) => {
     this.setState({ error: false, message: '' });
     const { name } = event.currentTarget;
-    if(name === 'password' && event.currentTarget.value.length >= 8){
+    if (name === 'password' && event.currentTarget.value.length >= 9) {
       this.setState({ error: true, message: 'Не больше 8 символов', passwordIsValid: false });
-      return
+      return;
     }
-    if(name === 'email' && event.currentTarget.value.length >= 30){
+    if (name === 'email' && event.currentTarget.value.length >= 30) {
       this.setState({ error: true, message: 'Не больше 30 символов', emailIsValid: false });
-      return
+      return;
     }
-    
+
     this.setState({ [name]: event.currentTarget.value, emailIsValid: true, passwordIsValid: true });
   };
 
   render() {
-    const { error, message, passwordIsValid, emailIsValid } = this.state;
+    const {
+      error, message, passwordIsValid, emailIsValid, email, password,
+    } = this.state;
     return (
-      <AuthForm action="">
+      <AuthForm>
         <Title>Войти на сайт</Title>
         <WrapperInput>
           <input
-            className={emailIsValid? "auth__input" : "auth__input invalid"}
+            className={emailIsValid ? 'auth__input' : 'auth__input invalid'}
             name="email"
             type="email"
             id="email"
             placeholder="Email"
-            value={this.state.email}
+            value={email}
             onChange={this.handleChange}
           />
         </WrapperInput>
         <WrapperInput>
           <input
-            className={passwordIsValid? "auth__input" : "auth__input invalid"}
+            className={passwordIsValid ? 'auth__input' : 'auth__input invalid'}
             name="password"
             type="password"
             id="password"
             placeholder="Password"
-            value={this.state.password}
+            value={password}
             onChange={this.handleChange}
           />
         </WrapperInput>
@@ -161,12 +177,4 @@ class Auth extends Component<Props, State> {
   }
 }
 
-const mapStateToProps = (store: RootState) => ({
-  store,
-});
-
-const mapDispatchToProps = {
-  loginUser,
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(Auth);
+export default connector(Auth);

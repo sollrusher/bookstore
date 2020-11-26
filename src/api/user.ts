@@ -6,7 +6,7 @@ import fetcher from './fetch';
 export const getProfileData = () => fetcher.get('/users/profile')
   .then((data) => data.data.payload.users);
 
-export function sendAvatar(formData: any) {
+export function sendAvatar(formData: FormData) {
   const config = {
     headers: {
       'Contetnt-Type': 'multipart/form-data',

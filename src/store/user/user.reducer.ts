@@ -1,31 +1,38 @@
 /* eslint-disable import/no-unresolved */
 /* eslint-disable import/extensions */
-import { LOGIN_USER, LoginType, INIT_USER } from '../actionTypes';
+import { LOGIN_USER, LoginActionType, INIT_USER } from '../actionTypes';
 import { getProfileData } from '../../api/user';
 import { loginUser } from './user.action';
 import store from '../store';
+import { UserState } from '../storeTypes';
 
 const getInitialState = () => {
   const token = localStorage.getItem('token');
   if (!token) {
     return {
-      user: {},
+      user: {
+        id: 0,
+        email: '',
+        fullname: '',
+        age: 0,
+        about: '',
+      },
       initialized: false,
     };
   }
-
   return {
-    user: {},
+    user: {
+      id: 0,
+      email: '',
+      fullname: '',
+      age: 0,
+      about: '',
+    },
     initialized: true,
   };
 };
 
-// type TypeState = {
-//   user: {},
-//   initialized: boolean,
-// };
-
-const login = (state = getInitialState(), action:LoginType) => {
+const login = (state:UserState = getInitialState(), action:LoginActionType): UserState => {
   switch (action.type) {
     case LOGIN_USER:
       console.log(state);
@@ -43,14 +50,13 @@ const login = (state = getInitialState(), action:LoginType) => {
       };
     case INIT_USER:
     {
-      const data = getProfileData().then((userdata) => {
+      getProfileData().then((userdata) => {
         const {
           id, email, fullname, age, about,
         } = userdata;
         console.log(id, email, fullname, age, about);
         store.dispatch(loginUser(id, email, fullname, age, about));
       });
-      console.log(data);
       return state;
     }
     default:

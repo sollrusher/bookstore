@@ -1,10 +1,12 @@
 export interface User {
   id: number
   email: string
-  password: string
-  token: string
+  fullname: string
+  age: number
+  about: string
 }
 
 export interface UserState {
-  user: User[]
+  user: User
+  initialized: boolean
 }

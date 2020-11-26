@@ -14,4 +14,4 @@ interface InitUserAction {
   type: typeof INIT_USER
 }
 
-export type LoginType = LoginUserAction | InitUserAction
+export type LoginActionType = LoginUserAction | InitUserAction
