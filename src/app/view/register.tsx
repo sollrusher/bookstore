@@ -1,3 +1,4 @@
+/* eslint-disable no-shadow */
 /* eslint-disable react/jsx-filename-extension */
 /* eslint-disable import/no-unresolved */
 /* eslint-disable import/extensions */
@@ -90,7 +91,7 @@ class Register extends Component<Props, State> {
     this.state = {
       email: '',
       password: '',
-      age: 0,
+      age: 1,
       fullname: '',
       error: false,
       message: '',
@@ -102,12 +103,13 @@ class Register extends Component<Props, State> {
   }
 
   getRegister = (e: React.MouseEvent<HTMLInputElement, MouseEvent>) => {
+    const { loginUser } = this.props;
     e.preventDefault();
     const {
       email, password, fullname, age,
     } = this.state;
     if ((!email.includes('@') || !email.includes('.com')) && (!email.includes('@') || !email.includes('.ru'))) {
-      this.setState({ emailIsValid: false });
+      this.setState({ emailIsValid: false, error: true, message: 'Неправильный ввод Email' });
       return;
     }
     if (password.length === 9) {
@@ -116,15 +118,14 @@ class Register extends Component<Props, State> {
     this.setState({ passwordIsValid: true });
     register(email, password, fullname, age)
       .then((data) => {
-        const { id } = data.data.payload.user;
-        loginUser(id, email, fullname, age, '');
+        const { id, about } = data.data.payload.user;
+        console.log(about);
+        loginUser(id, email, fullname, age, about);
       })
       .catch((errorData) => {
-        console.log(errorData.response);
-        const { error, message } = errorData.response.data;
         this.setState({
-          error,
-          message,
+          error: true,
+          message: errorData,
         });
       });
   };

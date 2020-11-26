@@ -30,12 +30,10 @@ export function register(email: string, password: string, fullname:string, age:n
   return fetcher.post('/register', {
     email, password, fullname, age,
   }).then((data) => {
+    if (data.data.error) throw new Error(data.data.message);
     console.log(data);
     localStorage.setItem('token', JSON.stringify(data.data.payload.token));
     return data;
-  }).catch((fata) => {
-    console.log(fata);
-    return fata;
   });
 }
 
