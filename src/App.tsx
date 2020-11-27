@@ -15,6 +15,7 @@ import Profile from './app/view/profile';
 import Register from './app/view/register';
 import PrivateRoute from './privateRoute';
 import { RootState } from './store/reducer';
+import MainPage from './app/view/mainPage/mainPage';
 
 const mapStateToProps = (store: RootState) => ({
   user: store.user,
@@ -39,6 +40,9 @@ function App(props:Props) {
         <li>
           <Link to="/profile">Profile</Link>
         </li>
+        <li>
+          <Link to="/main">BookStore</Link>
+        </li>
       </ul>
       <Switch>
 
@@ -48,6 +52,9 @@ function App(props:Props) {
         <Route path="/register">
           {user.initialized ? <Redirect to="/profile" /> : <Register />}
         </Route>
+        <PrivateRoute auth={user.initialized} path="/main">
+          <MainPage />
+        </PrivateRoute>
         <PrivateRoute auth={user.initialized} path="/profile">
           <Profile />
         </PrivateRoute>
